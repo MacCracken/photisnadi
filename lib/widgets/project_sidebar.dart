@@ -125,8 +125,9 @@ class _ProjectSidebarState extends State<ProjectSidebar> {
                   context.read<TaskService>().selectProject(project.id),
               child: Container(
                 decoration: BoxDecoration(
-                  color:
-                      isSelected ? color.withOpacity(0.2) : Colors.transparent,
+                  color: isSelected
+                      ? color.withValues(alpha: 0.2)
+                      : Colors.transparent,
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
                     color: isSelected ? color : Colors.transparent,
@@ -257,7 +258,7 @@ class _ProjectSidebarState extends State<ProjectSidebar> {
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-      color: isSelected ? color.withOpacity(0.1) : null,
+      color: isSelected ? color.withValues(alpha: 0.1) : null,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8),
         side: isSelected ? BorderSide(color: color, width: 2) : BorderSide.none,
@@ -274,7 +275,7 @@ class _ProjectSidebarState extends State<ProjectSidebar> {
                 width: 32,
                 height: 32,
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.2),
+                  color: color.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Center(

@@ -1,19 +1,18 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'dart:io';
-
 import 'themes/app_theme.dart';
-import 'screens/home_screen.dart';
-import 'services/task_service.dart';
-import 'services/theme_service.dart';
-import 'services/desktop_integration.dart';
-import 'services/sync_service.dart';
-import 'models/task.dart';
-import 'models/ritual.dart';
 import 'models/board.dart';
 import 'models/project.dart';
+import 'models/ritual.dart';
+import 'models/task.dart';
+import 'screens/home_screen.dart';
+import 'services/desktop_integration.dart';
+import 'services/sync_service.dart';
+import 'services/task_service.dart';
+import 'services/theme_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -35,7 +34,7 @@ void main() async {
     await Hive.openBox<Ritual>('rituals');
     await Hive.openBox<Project>('projects');
     await Hive.openBox('settings');
-  } catch (e) {
+  } on Exception catch (e) {
     debugPrint('Failed to open Hive boxes: $e');
     // Continue without boxes - app will work with empty data
   }

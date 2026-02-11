@@ -201,7 +201,7 @@ void showEditTaskDialog(BuildContext context, Task task) {
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<TaskPriority>(
-                value: selectedPriority,
+                initialValue: selectedPriority,
                 decoration: const InputDecoration(labelText: 'Priority'),
                 items: TaskPriority.values.map((priority) {
                   return DropdownMenuItem(
@@ -217,7 +217,7 @@ void showEditTaskDialog(BuildContext context, Task task) {
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<TaskStatus>(
-                value: selectedStatus,
+                initialValue: selectedStatus,
                 decoration: const InputDecoration(labelText: 'Status'),
                 items: TaskStatus.values.map((status) {
                   return DropdownMenuItem(

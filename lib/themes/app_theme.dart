@@ -17,12 +17,10 @@ class AppTheme {
         secondary: softTeal,
         tertiary: accentOrange,
         surface: surfaceLight,
-        background: Colors.white,
         onPrimary: Colors.white,
         onSecondary: Colors.white,
         onTertiary: Colors.white,
         onSurface: backgroundDark,
-        onBackground: backgroundDark,
       ),
       appBarTheme: const AppBarTheme(
         backgroundColor: Colors.transparent,
@@ -35,9 +33,9 @@ class AppTheme {
         ),
       ),
       cardTheme: CardThemeData(
-        color: Colors.white.withOpacity(0.7),
+        color: Colors.white.withValues(alpha: 0.7),
         elevation: 8,
-        shadowColor: Colors.black.withOpacity(0.1),
+        shadowColor: Colors.black.withValues(alpha: 0.1),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
@@ -55,7 +53,7 @@ class AppTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: Colors.white.withOpacity(0.8),
+        fillColor: Colors.white.withValues(alpha: 0.8),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: Colors.grey.shade300),
@@ -81,12 +79,10 @@ class AppTheme {
         secondary: softTeal,
         tertiary: accentOrange,
         surface: surfaceDark,
-        background: backgroundDark,
         onPrimary: Colors.white,
         onSecondary: Colors.white,
         onTertiary: Colors.white,
         onSurface: surfaceLight,
-        onBackground: surfaceLight,
       ),
       appBarTheme: const AppBarTheme(
         backgroundColor: Colors.transparent,
@@ -99,9 +95,9 @@ class AppTheme {
         ),
       ),
       cardTheme: CardThemeData(
-        color: surfaceDark.withOpacity(0.8),
+        color: surfaceDark.withValues(alpha: 0.8),
         elevation: 8,
-        shadowColor: Colors.black.withOpacity(0.3),
+        shadowColor: Colors.black.withValues(alpha: 0.3),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
@@ -119,7 +115,7 @@ class AppTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: surfaceDark.withOpacity(0.8),
+        fillColor: surfaceDark.withValues(alpha: 0.8),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: Colors.grey.shade600),
@@ -145,11 +141,9 @@ class AppTheme {
           primary: Colors.black,
           secondary: Colors.black,
           surface: Colors.white,
-          background: Colors.white,
           onPrimary: Colors.white,
           onSecondary: Colors.white,
           onSurface: Colors.black,
-          onBackground: Colors.black,
         ),
         appBarTheme: const AppBarTheme(
           backgroundColor: Colors.white,

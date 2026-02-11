@@ -5,15 +5,13 @@ import '../models/task.dart';
 Color parseColor(String colorHex) {
   try {
     return Color(int.parse(colorHex.replaceFirst('#', '0xFF')));
-  } catch (_) {
+  } on FormatException {
     return Colors.blue;
   }
 }
 
 /// Formats a DateTime to a string (DD/MM/YYYY)
-String formatDate(DateTime date) {
-  return '${date.day}/${date.month}/${date.year}';
-}
+String formatDate(DateTime date) => '${date.day}/${date.month}/${date.year}';
 
 /// Capitalizes the first letter of a string
 String capitalizeFirst(String text) {
@@ -22,14 +20,11 @@ String capitalizeFirst(String text) {
 }
 
 /// Formats a TaskPriority to a display string
-String formatPriority(TaskPriority priority) {
-  return capitalizeFirst(priority.name);
-}
+String formatPriority(TaskPriority priority) => capitalizeFirst(priority.name);
 
 /// Formats a TaskStatus to a display string
-String formatStatus(TaskStatus status) {
-  return capitalizeFirst(status.name.replaceAll('_', ' '));
-}
+String formatStatus(TaskStatus status) =>
+    capitalizeFirst(status.name.replaceAll('_', ' '));
 
 /// Gets the color for a task priority
 Color getPriorityColor(TaskPriority priority) {
