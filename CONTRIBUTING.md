@@ -16,13 +16,13 @@ Thank you for your interest in contributing! This guide outlines the process for
    - Click the "Fork" button on GitHub
    - Clone your fork locally:
      ```bash
-     git clone https://github.com/YOURUSERNAME/photisnadi.git
+     git clone https://github.com/MacCracken/photisnadi.git
      cd photisnadi
      ```
 
 2. **Set up upstream remote**
    ```bash
-   git remote add upstream https://github.com/originalowner/photisnadi.git
+   git remote add upstream https://github.com/MacCracken/photisnadi.git
    ```
 
 3. **Install dependencies**

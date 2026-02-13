@@ -195,7 +195,7 @@ Missed Thursday, completed Friday: 🔥3🔥
 Photis Nadi offers two distinct visual modes for different use cases.
 
 ### Vibrant Mode (Default)
-- **Glassmorphism**: Frosted glass effects with transparency
+- **Theme**: Modern vibrant colors with transparency effects
 - **Color Palette**: Deep indigos, soft teals, accent oranges
 - **Best For**: Everyday use on modern displays
 - **Features**: 

@@ -63,25 +63,4 @@ class DesktopIntegration {
 
     await systemTray.setContextMenu(trayMenu);
   }
-
-  static Future<void> setupMacOSMenuBar() async {
-    // This would require platform-specific implementation
-    // Using window_manager as a cross-platform solution
-    await windowManager.setAlwaysOnTop(false);
-  }
-
-  static Future<void> toggleAlwaysOnTop() async {
-    bool isAlwaysOnTop = await windowManager.isAlwaysOnTop();
-    await windowManager.setAlwaysOnTop(!isAlwaysOnTop);
-  }
-
-  static Future<void> minimizeToTray() async {
-    await windowManager.hide();
-  }
-
-  static Future<void> showFloatingWindow() async {
-    await windowManager.setSize(const Size(400, 300));
-    await windowManager.setAlignment(Alignment.topRight);
-    await windowManager.setAlwaysOnTop(true);
-  }
 }

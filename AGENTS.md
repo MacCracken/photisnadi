@@ -47,18 +47,6 @@ flutter packages pub run build_runner build --delete-conflicting-outputs
 flutter packages pub run build_runner watch  # Watch for changes
 ```
 
-## Recent Code Improvements
-
-### Fixed Issues
-- **Syntax Error**: Fixed syntax error in `lib/services/sync_service.dart:217-218` where duplicate `modified_at` field was present
-- **Missing Adapters**: Added BoardAdapter and BoardColumnAdapter registration in test file `test/unit_test.dart`
-- **Font Assets**: Removed empty font files and updated `pubspec.yaml` to remove non-existent font references
-- **Unused Dependencies**: Removed unused dependencies:
-  - `riverpod` (not used, only `provider` is used)
-  - `flutter_staggered_animations` (not used anywhere)
-  - `glassmorphism` (unused glassCard method removed)
-- **Import Cleanup**: Cleaned up unused imports in `lib/themes/app_theme.dart`
-
 ## Code Style Guidelines
 
 ### Import Style
@@ -181,7 +169,7 @@ photisnadi/
 
 - Use `const` widgets where possible
 - Prefer `StatefulWidget` only when state is truly needed
-- Use `Provider` or `Riverpod` for state management (configured)
+- Use `Provider` for state management
 - Follow Material 3 design principles
 - Use `SizedBox` instead of `Container` for spacing
 - Implement proper widget lifecycle management
