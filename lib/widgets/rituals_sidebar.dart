@@ -38,27 +38,15 @@ class _RitualsSidebarState extends State<RitualsSidebar> {
         final completionPercentage =
             totalCount > 0 ? (completedCount / totalCount) * 100 : 0.0;
 
-        return Container(
-          width: widget.isCollapsed ? 60 : 320,
-          decoration: BoxDecoration(
-            color: Theme.of(context).cardColor,
-            border: Border(
-              right: BorderSide(
-                color: Theme.of(context).dividerColor,
-                width: 1,
-              ),
-            ),
-          ),
-          child: Column(
-            children: [
+        return CollapsibleSidebar(
+          isCollapsed: widget.isCollapsed,
+          collapsedWidth: 60,
+          expandedWidth: 320,
+          header:
               _buildHeader(completedCount, totalCount, completionPercentage),
-              Expanded(
-                child: widget.isCollapsed
-                    ? _buildCollapsedView(rituals)
-                    : _buildExpandedView(rituals, taskService),
-              ),
-            ],
-          ),
+          child: widget.isCollapsed
+              ? _buildCollapsedView(rituals)
+              : _buildExpandedView(rituals, taskService),
         );
       },
     );

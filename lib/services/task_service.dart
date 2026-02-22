@@ -499,13 +499,32 @@ class TaskService extends ChangeNotifier {
     return projectTasks.where((task) => task.status == column.status).toList();
   }
 
+  List<Task> _getTasksForColumnFiltered(String columnId, String projectId) {
+    final filtered = getFilteredTasks(projectId);
+    final columnStatus = getColumnStatus(columnId);
+    return filtered.where((task) => task.status == columnStatus).toList();
+  }
+
+  TaskStatus getColumnStatus(String columnId) {
+    for (final project in _projects) {
+      for (final column in project.columns) {
+        if (column.id == columnId) {
+          return column.status;
+        }
+      }
+    }
+    return TaskStatus.todo;
+  }
+
   List<Task> getTasksForColumnPaginated(
     String columnId, {
     String? projectId,
     int page = 0,
     int pageSize = AppConstants.defaultPageSize,
   }) {
-    final allTasks = getTasksForColumn(columnId, projectId: projectId);
+    final allTasks = hasActiveFilters && projectId != null
+        ? _getTasksForColumnFiltered(columnId, projectId)
+        : getTasksForColumn(columnId, projectId: projectId);
     final startIndex = page * pageSize;
     if (startIndex >= allTasks.length) return [];
     final endIndex = (startIndex + pageSize).clamp(0, allTasks.length);
@@ -513,6 +532,9 @@ class TaskService extends ChangeNotifier {
   }
 
   int getTaskCountForColumn(String columnId, {String? projectId}) {
+    if (hasActiveFilters && projectId != null) {
+      return _getTasksForColumnFiltered(columnId, projectId).length;
+    }
     return getTasksForColumn(columnId, projectId: projectId).length;
   }
 
@@ -645,4 +667,166 @@ class TaskService extends ChangeNotifier {
       return false;
     }
   }
+
+  String _searchQuery = '';
+  TaskStatus? _filterStatus;
+  TaskPriority? _filterPriority;
+  String? _filterTag;
+  DateTime? _filterDueBefore;
+  DateTime? _filterDueAfter;
+  TaskSortBy _sortBy = TaskSortBy.createdAt;
+  bool _sortAscending = false;
+
+  String get searchQuery => _searchQuery;
+  TaskStatus? get filterStatus => _filterStatus;
+  TaskPriority? get filterPriority => _filterPriority;
+  String? get filterTag => _filterTag;
+  DateTime? get filterDueBefore => _filterDueBefore;
+  DateTime? get filterDueAfter => _filterDueAfter;
+  TaskSortBy get sortBy => _sortBy;
+  bool get sortAscending => _sortAscending;
+
+  bool get hasActiveFilters =>
+      _searchQuery.isNotEmpty ||
+      _filterStatus != null ||
+      _filterPriority != null ||
+      _filterTag != null ||
+      _filterDueBefore != null ||
+      _filterDueAfter != null;
+
+  void setSearchQuery(String query) {
+    _searchQuery = query.toLowerCase();
+    notifyListeners();
+  }
+
+  void setFilterStatus(TaskStatus? status) {
+    _filterStatus = status;
+    notifyListeners();
+  }
+
+  void setFilterPriority(TaskPriority? priority) {
+    _filterPriority = priority;
+    notifyListeners();
+  }
+
+  void setFilterTag(String? tag) {
+    _filterTag = tag;
+    notifyListeners();
+  }
+
+  void setFilterDueBefore(DateTime? date) {
+    _filterDueBefore = date;
+    notifyListeners();
+  }
+
+  void setFilterDueAfter(DateTime? date) {
+    _filterDueAfter = date;
+    notifyListeners();
+  }
+
+  void setSortBy(TaskSortBy sortBy) {
+    if (_sortBy == sortBy) {
+      _sortAscending = !_sortAscending;
+    } else {
+      _sortBy = sortBy;
+      _sortAscending = false;
+    }
+    notifyListeners();
+  }
+
+  void clearFilters() {
+    _searchQuery = '';
+    _filterStatus = null;
+    _filterPriority = null;
+    _filterTag = null;
+    _filterDueBefore = null;
+    _filterDueAfter = null;
+    notifyListeners();
+  }
+
+  List<Task> getFilteredTasks(String projectId) {
+    var filtered = _tasks.where((task) => task.projectId == projectId).toList();
+
+    if (_searchQuery.isNotEmpty) {
+      filtered = filtered.where((task) {
+        return task.title.toLowerCase().contains(_searchQuery) ||
+            (task.description?.toLowerCase().contains(_searchQuery) ?? false) ||
+            (task.taskKey?.toLowerCase().contains(_searchQuery) ?? false) ||
+            task.tags.any((tag) => tag.toLowerCase().contains(_searchQuery));
+      }).toList();
+    }
+
+    if (_filterStatus != null) {
+      filtered =
+          filtered.where((task) => task.status == _filterStatus).toList();
+    }
+
+    if (_filterPriority != null) {
+      filtered =
+          filtered.where((task) => task.priority == _filterPriority).toList();
+    }
+
+    if (_filterTag != null) {
+      filtered =
+          filtered.where((task) => task.tags.contains(_filterTag)).toList();
+    }
+
+    if (_filterDueBefore != null) {
+      filtered = filtered
+          .where((task) =>
+              task.dueDate != null && task.dueDate!.isBefore(_filterDueBefore!))
+          .toList();
+    }
+
+    if (_filterDueAfter != null) {
+      filtered = filtered
+          .where((task) =>
+              task.dueDate != null && task.dueDate!.isAfter(_filterDueAfter!))
+          .toList();
+    }
+
+    filtered.sort((a, b) {
+      int comparison;
+      switch (_sortBy) {
+        case TaskSortBy.createdAt:
+          comparison = a.createdAt.compareTo(b.createdAt);
+          break;
+        case TaskSortBy.dueDate:
+          if (a.dueDate == null && b.dueDate == null) {
+            comparison = 0;
+          } else if (a.dueDate == null) {
+            comparison = 1;
+          } else if (b.dueDate == null) {
+            comparison = -1;
+          } else {
+            comparison = a.dueDate!.compareTo(b.dueDate!);
+          }
+          break;
+        case TaskSortBy.priority:
+          comparison = a.priority.index.compareTo(b.priority.index);
+          break;
+        case TaskSortBy.title:
+          comparison = a.title.toLowerCase().compareTo(b.title.toLowerCase());
+          break;
+      }
+      return _sortAscending ? comparison : -comparison;
+    });
+
+    return filtered;
+  }
+
+  List<String> getAllTagsForProject(String projectId) {
+    final tags = <String>{};
+    for (final task in _tasks.where((t) => t.projectId == projectId)) {
+      tags.addAll(task.tags);
+    }
+    return tags.toList()..sort();
+  }
+}
+
+enum TaskSortBy {
+  createdAt,
+  dueDate,
+  priority,
+  title,
 }

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:uuid/uuid.dart';
 import '../services/task_service.dart';
 import '../models/task.dart';
 import '../models/project.dart';
@@ -10,6 +9,9 @@ import '../common/constants.dart';
 import 'dialogs/task_dialogs.dart';
 import 'dialogs/project_dialogs.dart';
 import 'common/common_widgets.dart';
+import 'common/task_card.dart';
+import 'common/column_widgets.dart';
+import 'common/search_filter_bar.dart';
 
 class PaginatedTaskColumn extends StatefulWidget {
   final BoardColumn column;
@@ -89,87 +91,14 @@ class _PaginatedTaskColumnState extends State<PaginatedTaskColumn> {
   }
 
   Widget _buildColumnHeader(Color color, int totalCount) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppConstants.headerPadding),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(AppConstants.borderRadiusLarge),
-          topRight: Radius.circular(AppConstants.borderRadiusLarge),
-        ),
-      ),
-      child: Row(
-        children: [
-          ReorderableDragStartListener(
-            index: widget.column.order,
-            child: Icon(Icons.drag_handle,
-                color: color, size: AppConstants.iconSizeLarge),
-          ),
-          const SizedBox(width: AppConstants.smallPadding),
-          Expanded(
-            child: Text(
-              widget.column.title,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: color,
-              ),
-            ),
-          ),
-          const SizedBox(width: AppConstants.smallPadding),
-          Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppConstants.smallPadding,
-              vertical: AppConstants.tinyPadding,
-            ),
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Text(
-              '$totalCount',
-              style: TextStyle(
-                fontSize: AppConstants.taskKeyFontSize,
-                fontWeight: FontWeight.bold,
-                color: color,
-              ),
-            ),
-          ),
-          PopupMenuButton<String>(
-            icon: Icon(Icons.more_vert,
-                color: color, size: AppConstants.iconSizeLarge),
-            onSelected: (value) {
-              if (value == 'edit') {
-                _showEditColumnDialog(context, widget.project, widget.column);
-              } else if (value == 'delete') {
-                _showDeleteColumnDialog(context, widget.project, widget.column);
-              }
-            },
-            itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: 'edit',
-                child: Row(
-                  children: [
-                    Icon(Icons.edit, size: 18),
-                    SizedBox(width: 8),
-                    Text('Edit'),
-                  ],
-                ),
-              ),
-              const PopupMenuItem(
-                value: 'delete',
-                child: Row(
-                  children: [
-                    Icon(Icons.delete, size: 18),
-                    SizedBox(width: 8),
-                    Text('Delete'),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
+    return ColumnHeader(
+      column: widget.column,
+      color: color,
+      totalCount: totalCount,
+      onEdit: () =>
+          showEditColumnDialog(context, widget.project, widget.column),
+      onDelete: () =>
+          showDeleteColumnDialog(context, widget.project, widget.column),
     );
   }
 
@@ -202,141 +131,26 @@ class _PaginatedTaskColumnState extends State<PaginatedTaskColumn> {
         borderRadius: BorderRadius.circular(AppConstants.cardBorderRadius),
         child: SizedBox(
           width: AppConstants.columnWidth - 20,
-          child: _buildTaskCard(task, isDragging: true),
+          child: TaskCard(
+            task: task,
+            isDragging: true,
+            onTap: () => showTaskDetails(context, task),
+            onLongPress: () => showTaskMenu(context, task),
+          ),
         ),
       ),
       childWhenDragging: Opacity(
         opacity: 0.5,
-        child: _buildTaskCard(task),
+        child: TaskCard(
+          task: task,
+          onTap: () => showTaskDetails(context, task),
+          onLongPress: () => showTaskMenu(context, task),
+        ),
       ),
-      child: _buildTaskCard(task),
-    );
-  }
-
-  Widget _buildTaskCard(Task task, {bool isDragging = false}) {
-    final priorityColor = getPriorityColor(task.priority);
-
-    return Card(
-      margin: const EdgeInsets.symmetric(
-        horizontal: AppConstants.cardMarginHorizontal,
-        vertical: AppConstants.cardMarginVertical,
-      ),
-      elevation:
-          isDragging ? AppConstants.elevationHigh : AppConstants.elevationLow,
-      child: InkWell(
+      child: TaskCard(
+        task: task,
         onTap: () => showTaskDetails(context, task),
         onLongPress: () => showTaskMenu(context, task),
-        borderRadius: BorderRadius.circular(AppConstants.cardBorderRadius),
-        child: Padding(
-          padding: const EdgeInsets.all(AppConstants.cardPadding),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  if (task.taskKey != null) ...[
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: AppConstants.tinyPadding,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade200,
-                        borderRadius: BorderRadius.circular(
-                            AppConstants.borderRadiusSmall),
-                      ),
-                      child: Text(
-                        task.taskKey!,
-                        style: TextStyle(
-                          fontSize: AppConstants.taskKeyFontSize,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.grey.shade700,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: AppConstants.smallPadding),
-                  ],
-                  const Spacer(),
-                  Container(
-                    width: 8,
-                    height: 8,
-                    decoration: BoxDecoration(
-                      color: priorityColor,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppConstants.smallPadding),
-              Text(
-                task.title,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w500,
-                  fontSize: 14,
-                ),
-              ),
-              if (task.description != null) ...[
-                const SizedBox(height: AppConstants.tinyPadding),
-                Text(
-                  task.description!,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey.shade600,
-                  ),
-                  maxLines: AppConstants.descriptionMaxLines,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-              if (task.tags.isNotEmpty) ...[
-                const SizedBox(height: AppConstants.smallPadding),
-                Wrap(
-                  spacing: AppConstants.tinyPadding,
-                  runSpacing: AppConstants.tinyPadding,
-                  children: task.tags.map((tag) {
-                    return Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: AppConstants.tinyPadding,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.blue.shade50,
-                        borderRadius: BorderRadius.circular(
-                            AppConstants.borderRadiusSmall),
-                      ),
-                      child: Text(
-                        tag,
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: Colors.blue.shade700,
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                ),
-              ],
-              if (task.dueDate != null) ...[
-                const SizedBox(height: AppConstants.smallPadding),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.calendar_today,
-                      size: AppConstants.iconSizeSmall,
-                      color: Colors.grey.shade500,
-                    ),
-                    const SizedBox(width: AppConstants.tinyPadding),
-                    Text(
-                      formatDate(task.dueDate!),
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Colors.grey.shade500,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ],
-          ),
-        ),
       ),
     );
   }
@@ -349,103 +163,6 @@ class _PaginatedTaskColumnState extends State<PaginatedTaskColumn> {
         onPressed: () => showAddTaskDialog(context, columnId: widget.column.id),
         icon: const Icon(Icons.add, size: AppConstants.iconSizeMedium),
         label: const Text('Add Task'),
-      ),
-    );
-  }
-
-  void _showEditColumnDialog(
-      BuildContext context, Project project, BoardColumn column) {
-    final titleController = TextEditingController(text: column.title);
-    TaskStatus selectedStatus = column.status;
-    String selectedColor = column.color;
-
-    showDialog(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
-          title: const Text('Edit Column'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: titleController,
-                decoration: const InputDecoration(
-                  labelText: 'Column Name',
-                ),
-              ),
-              const SizedBox(height: AppConstants.headerPadding),
-              DropdownButtonFormField<TaskStatus>(
-                initialValue: selectedStatus,
-                decoration: const InputDecoration(labelText: 'Status'),
-                items: TaskStatus.values.map((status) {
-                  return DropdownMenuItem(
-                    value: status,
-                    child: Text(status.name),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  if (value != null) {
-                    setState(() => selectedStatus = value);
-                  }
-                },
-              ),
-              const SizedBox(height: AppConstants.headerPadding),
-              ColorPicker(
-                selectedColor: selectedColor,
-                onColorSelected: (color) =>
-                    setState(() => selectedColor = color),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                if (titleController.text.isNotEmpty) {
-                  final updatedColumn = widget.column.copyWith(
-                    title: titleController.text,
-                    status: selectedStatus,
-                    color: selectedColor,
-                  );
-                  context
-                      .read<TaskService>()
-                      .updateColumn(widget.project.id, updatedColumn);
-                  Navigator.pop(context);
-                }
-              },
-              child: const Text('Save'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showDeleteColumnDialog(
-      BuildContext context, Project project, BoardColumn column) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Column'),
-        content: Text(
-            'Are you sure you want to delete "${column.title}"? Tasks in this column will need to be moved to another column.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            onPressed: () {
-              context.read<TaskService>().deleteColumn(project.id, column.id);
-              Navigator.pop(context);
-            },
-            child: const Text('Delete'),
-          ),
-        ],
       ),
     );
   }
@@ -543,135 +260,74 @@ class _KanbanBoardState extends State<KanbanBoard> {
 
     return Container(
       padding: const EdgeInsets.all(16),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (project != null) ...[
-            Container(
-              width: 8,
-              height: 24,
-              decoration: BoxDecoration(
-                color: projectColor,
-                borderRadius: BorderRadius.circular(4),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  project.name,
-                  style: const TextStyle(
+          Row(
+            children: [
+              if (project != null) ...[
+                Container(
+                  width: 8,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    color: projectColor,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      project.name,
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      project.projectKey,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey.shade600,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ] else
+                const Text(
+                  'Projects',
+                  style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                Text(
-                  project.projectKey,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey.shade600,
-                    fontWeight: FontWeight.w500,
-                  ),
+              const Spacer(),
+              if (project != null) ...[
+                IconButton(
+                  onPressed: () => showAddColumnDialog(context, project),
+                  icon: const Icon(Icons.view_column),
+                  tooltip: 'Add Column',
+                ),
+                IconButton(
+                  onPressed: () => showAddTaskDialog(context),
+                  icon: const Icon(Icons.add),
+                  tooltip: 'Add Task',
+                ),
+                IconButton(
+                  onPressed: () => showProjectSettings(context, project),
+                  icon: const Icon(Icons.settings),
+                  tooltip: 'Project Settings',
                 ),
               ],
-            ),
-          ] else
-            const Text(
-              'Projects',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          const Spacer(),
-          if (project != null) ...[
-            IconButton(
-              onPressed: () => _showAddColumnDialog(context, project),
-              icon: const Icon(Icons.view_column),
-              tooltip: 'Add Column',
-            ),
-            IconButton(
-              onPressed: () => showAddTaskDialog(context),
-              icon: const Icon(Icons.add),
-              tooltip: 'Add Task',
-            ),
-            IconButton(
-              onPressed: () => showProjectSettings(context, project),
-              icon: const Icon(Icons.settings),
-              tooltip: 'Project Settings',
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  void _showAddColumnDialog(BuildContext context, Project project) {
-    final titleController = TextEditingController();
-    TaskStatus selectedStatus = TaskStatus.todo;
-    String selectedColor = '#6B7280';
-
-    showDialog(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
-          title: const Text('Add Column'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: titleController,
-                decoration: const InputDecoration(
-                  labelText: 'Column Name',
-                  hintText: 'e.g., In Review',
-                ),
-              ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<TaskStatus>(
-                initialValue: selectedStatus,
-                decoration: const InputDecoration(labelText: 'Status'),
-                items: TaskStatus.values.map((status) {
-                  return DropdownMenuItem(
-                    value: status,
-                    child: Text(status.name),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  if (value != null) {
-                    setState(() => selectedStatus = value);
-                  }
-                },
-              ),
-              const SizedBox(height: 16),
-              ColorPicker(
-                selectedColor: selectedColor,
-                onColorSelected: (color) =>
-                    setState(() => selectedColor = color),
-              ),
             ],
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                if (titleController.text.isNotEmpty) {
-                  final column = BoardColumn(
-                    id: const Uuid().v4(),
-                    title: titleController.text,
-                    status: selectedStatus,
-                    color: selectedColor,
-                  );
-                  context.read<TaskService>().addColumn(project.id, column);
-                  Navigator.pop(context);
-                }
-              },
-              child: const Text('Add'),
-            ),
+          if (project != null) ...[
+            const SizedBox(height: 12),
+            const SearchFilterBar(),
           ],
-        ),
+        ],
       ),
     );
   }

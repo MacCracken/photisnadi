@@ -1,0 +1,159 @@
+import 'package:flutter/material.dart';
+import '../../models/task.dart';
+import '../../common/utils.dart';
+import '../../common/constants.dart';
+
+class TaskCard extends StatelessWidget {
+  final Task task;
+  final VoidCallback? onTap;
+  final VoidCallback? onLongPress;
+  final bool isDragging;
+
+  const TaskCard({
+    super.key,
+    required this.task,
+    this.onTap,
+    this.onLongPress,
+    this.isDragging = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final priorityColor = getPriorityColor(task.priority);
+
+    return Card(
+      margin: const EdgeInsets.symmetric(
+        horizontal: AppConstants.cardMarginHorizontal,
+        vertical: AppConstants.cardMarginVertical,
+      ),
+      elevation:
+          isDragging ? AppConstants.elevationHigh : AppConstants.elevationLow,
+      child: InkWell(
+        onTap: onTap,
+        onLongPress: onLongPress,
+        borderRadius: BorderRadius.circular(AppConstants.cardBorderRadius),
+        child: Padding(
+          padding: const EdgeInsets.all(AppConstants.cardPadding),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildHeader(task, priorityColor),
+              const SizedBox(height: AppConstants.smallPadding),
+              Text(
+                task.title,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 14,
+                ),
+              ),
+              if (task.description != null) ...[
+                const SizedBox(height: AppConstants.tinyPadding),
+                Text(
+                  task.description!,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey.shade600,
+                  ),
+                  maxLines: AppConstants.descriptionMaxLines,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+              if (task.tags.isNotEmpty) ...[
+                const SizedBox(height: AppConstants.smallPadding),
+                _buildTags(task.tags),
+              ],
+              if (task.dueDate != null) ...[
+                const SizedBox(height: AppConstants.smallPadding),
+                _buildDueDate(task.dueDate!),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader(Task task, Color priorityColor) {
+    return Row(
+      children: [
+        if (task.taskKey != null) ...[
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 6,
+              vertical: AppConstants.tinyPadding,
+            ),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade200,
+              borderRadius:
+                  BorderRadius.circular(AppConstants.borderRadiusSmall),
+            ),
+            child: Text(
+              task.taskKey!,
+              style: TextStyle(
+                fontSize: AppConstants.taskKeyFontSize,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey.shade700,
+              ),
+            ),
+          ),
+          const SizedBox(width: AppConstants.smallPadding),
+        ],
+        const Spacer(),
+        Container(
+          width: 8,
+          height: 8,
+          decoration: BoxDecoration(
+            color: priorityColor,
+            shape: BoxShape.circle,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTags(List<String> tags) {
+    return Wrap(
+      spacing: AppConstants.tinyPadding,
+      runSpacing: AppConstants.tinyPadding,
+      children: tags.map((tag) {
+        return Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 6,
+            vertical: AppConstants.tinyPadding,
+          ),
+          decoration: BoxDecoration(
+            color: Colors.blue.shade50,
+            borderRadius: BorderRadius.circular(AppConstants.borderRadiusSmall),
+          ),
+          child: Text(
+            tag,
+            style: TextStyle(
+              fontSize: 10,
+              color: Colors.blue.shade700,
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildDueDate(DateTime dueDate) {
+    return Row(
+      children: [
+        Icon(
+          Icons.calendar_today,
+          size: AppConstants.iconSizeSmall,
+          color: Colors.grey.shade500,
+        ),
+        const SizedBox(width: AppConstants.tinyPadding),
+        Text(
+          formatDate(dueDate),
+          style: TextStyle(
+            fontSize: 11,
+            color: Colors.grey.shade500,
+          ),
+        ),
+      ],
+    );
+  }
+}

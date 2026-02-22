@@ -25,43 +25,28 @@ class _ProjectSidebarState extends State<ProjectSidebar> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: widget.isCollapsed ? 60 : 240,
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        border: Border(
-          right: BorderSide(
-            color: Theme.of(context).dividerColor,
-            width: 1,
-          ),
-        ),
-      ),
-      child: Column(
-        children: [
-          _buildHeader(),
-          Expanded(
-            child: widget.isCollapsed
-                ? Selector<TaskService, List<Project>>(
-                    selector: (_, service) => service.activeProjects,
-                    builder: (context, projects, _) =>
-                        _buildCollapsedView(projects),
-                  )
-                : Selector<TaskService,
-                    (List<Project>, List<Project>, String?)>(
-                    selector: (_, service) => (
-                      service.activeProjects,
-                      service.archivedProjects,
-                      service.selectedProjectId
-                    ),
-                    builder: (context, data, _) => _buildExpandedView(
-                      data.$1,
-                      data.$2,
-                      data.$3,
-                    ),
-                  ),
-          ),
-        ],
-      ),
+    return CollapsibleSidebar(
+      isCollapsed: widget.isCollapsed,
+      collapsedWidth: 60,
+      expandedWidth: 240,
+      header: _buildHeader(),
+      child: widget.isCollapsed
+          ? Selector<TaskService, List<Project>>(
+              selector: (_, service) => service.activeProjects,
+              builder: (context, projects, _) => _buildCollapsedView(projects),
+            )
+          : Selector<TaskService, (List<Project>, List<Project>, String?)>(
+              selector: (_, service) => (
+                service.activeProjects,
+                service.archivedProjects,
+                service.selectedProjectId
+              ),
+              builder: (context, data, _) => _buildExpandedView(
+                data.$1,
+                data.$2,
+                data.$3,
+              ),
+            ),
     );
   }
 
